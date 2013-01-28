@@ -13,16 +13,22 @@ from lib.tracklogexporter import TracklogExporter
 from lib.dashboard import Dashboard
 import lib.databaseinit
 from pyspatialite import dbapi2 as spatialite
+import ConfigParser
 
-## CONFIGURATION ##########################################################
-GEOCACHE_SOURCE = '/var/autofs/removable/sda1/cacheberrypi/nav.csv'
-TRACKLOG_TARGET = 'tracks'
-TRACKLOG_EXPORT_TARGET = '/var/autofs/removable/sda1/cacheberrypi/tracks/'
-DATABASE_FILENAME = 'geocaches.sqlite'
-LED_PINS = [16,18,22] #GPIO23,24,25
-LED_SEARCH_STATUS = 2
-LED_CLOSE = 1
-###########################################################################
+config = ConfigParser.RawConfigParser({'MEASUREMENT_STANDARD': 'US', 'TIME_ZONE': 'US/Central'})
+config.read('cacheberrypi.cfg')
+
+units = config.get('Settings', 'MEASUREMENT_STANDARD')
+timezone = config.get('Settings', 'TIME_ZONE')
+GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
+TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
+TRACKLOG_EXPORT_TARGET = config.get('Advanced', 'TRACKLOG_EXPORT_TARGET')
+DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
+LED_SEARCH_STATUS = config.get('Advanced', 'LED_SEARCH_STATUS')
+LED_CLOSE = config.get('Advanced', 'LED_CLOSE')
+LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
+os.environ['TZ'] = timezone
+time.tzset()
 
 def mainloop(led, gps, finder, geocache_display, dashboard):
   while 1:
