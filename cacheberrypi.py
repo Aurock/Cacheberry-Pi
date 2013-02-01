@@ -24,8 +24,8 @@ GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
 TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
 TRACKLOG_EXPORT_TARGET = config.get('Advanced', 'TRACKLOG_EXPORT_TARGET')
 DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
-LED_SEARCH_STATUS = config.get('Advanced', 'LED_SEARCH_STATUS')
-LED_CLOSE = config.get('Advanced', 'LED_CLOSE')
+LED_SEARCH_STATUS = 2
+LED_CLOSE = 1
 LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 os.environ['TZ'] = timezone
 time.tzset()
