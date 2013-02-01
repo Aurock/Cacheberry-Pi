@@ -17,9 +17,9 @@ class Dashboard:
     self.__speed_widget = self.__screen.add_string_widget("speed","",y=2, x=1)
     self.__bearing_widget = self.__screen.add_string_widget("bearing","",y=2, x=14)
 
-  def update(self, clock, speed, bearing):
+  def update(self, clock, speed, bearing,units):
     if clock:
       self.__clock_widget.set_text(time.strftime('%H:%M:%S  %d-%b', clock))
     self.__bearing_widget.set_text(bearing)
-    self.__speed_widget.set_text('%0.0f km/h' % (speed * 3.6))
+    self.__speed_widget.set_text('%0.0f ' % speed + units)
 

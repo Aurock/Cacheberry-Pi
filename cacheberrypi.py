@@ -13,20 +13,21 @@ from lib.tracklogexporter import TracklogExporter
 from lib.dashboard import Dashboard
 import lib.databaseinit
 from pyspatialite import dbapi2 as spatialite
+from calendar import timegm
 import ConfigParser
 
 config = ConfigParser.RawConfigParser({'MEASUREMENT_STANDARD': 'US', 'TIME_ZONE': 'US/Central'})
 config.read('cacheberrypi.cfg')
 
-units = config.get('Settings', 'MEASUREMENT_STANDARD')
+MEASUREMENT_STANDARD = config.get('Settings', 'MEASUREMENT_STANDARD')
 timezone = config.get('Settings', 'TIME_ZONE')
 GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
 TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
 TRACKLOG_EXPORT_TARGET = config.get('Advanced', 'TRACKLOG_EXPORT_TARGET')
 DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
+LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 LED_SEARCH_STATUS = 2
 LED_CLOSE = 1
-LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 os.environ['TZ'] = timezone
 time.tzset()
 
@@ -38,15 +39,25 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
     finder.update_speed(gps_state['s'])
     finder.update_bearing(gps_state['b'])
 
+    if MEASUREMENT_STANDARD == 'US':
+        speed = gps_state['s']
+        units = 'mph'
+    elif units == 'METRIC':
+        speed = (gps_state['s'] * 3.6)
+        units = 'kph'
+    else:
+        raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
+
     try:
-      clock = time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z')
+      localtime(time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z'))
     except:
       clock = None
 
     dashboard.update(
         clock,
-        gps_state['s'], 
-        gislib.humanizeBearing(gps_state['b']))
+        speed, 
+        gislib.humanizeBearing(gps_state['b']),
+        units)
 
     # grab current closest cache 
     closest = finder.closest()
@@ -75,6 +86,10 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
       geocache_display.hide()
 
     time.sleep(.5)
+
+def localtime(gmttime):
+    unixtime = timegm(gmttime)
+    clock = time.localtime(unixtime)
   
 if __name__=='__main__':
 
