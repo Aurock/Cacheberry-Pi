@@ -21,6 +21,7 @@ config.read('cacheberrypi.cfg')
 
 MEASUREMENT_STANDARD = config.get('Settings', 'MEASUREMENT_STANDARD')
 timezone = config.get('Settings', 'TIME_ZONE')
+SCROLL_SPEED = config.get('Settings', 'DISPLAY_SCROLL_SPEED')
 GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
 TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
 TRACKLOG_EXPORT_TARGET = config.get('Advanced', 'TRACKLOG_EXPORT_TARGET')
@@ -28,6 +29,8 @@ DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
 LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 LED_SEARCH_STATUS = 2
 LED_CLOSE = 1
+
+
 os.environ['TZ'] = timezone
 time.tzset()
 
@@ -49,7 +52,7 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
         raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
 
     try:
-      localtime(time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z'))
+      clock = localtime(time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z'))
     except:
       clock = None
 
@@ -107,7 +110,7 @@ if __name__=='__main__':
   finder = GeocacheFinder(DATABASE_FILENAME, lambda: led.toggle(LED_SEARCH_STATUS))
   finder.start()
 
-  geocache_display = GeocacheDisplay()
+  geocache_display = GeocacheDisplay(SCROLL_SPEED)
 
   loader = GeocacheLoader(DATABASE_FILENAME, GEOCACHE_SOURCE, 
       lambda: finder.pause(),

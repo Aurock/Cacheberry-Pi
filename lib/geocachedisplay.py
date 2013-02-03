@@ -4,16 +4,18 @@ import os
 import unicodedata
 from lcdproc.server import Server
 
+
 class GeocacheDisplay:
-  def __init__(self):
+  def __init__(self, scroll_speed=3):
     self.__lcd = Server()
     self.__lcd.start_session()
     self.__screen = self.__lcd.add_screen("cache")
     self.__screen.set_heartbeat("off")
     self.__screen.set_duration(10)
     self.__screen.set_priority("hidden")
-
-    self.__title_widget = self.__screen.add_scroller_widget("title",1,1,12,1,"h",1,"")
+# Scroller Widget parameters - SCREEN, REF, LEFT, TOP, RIGHT, BOTTOM, DIRECTION, SPEED, TEXT
+# Scroll speed increases as the speed setting decreases.  1 is the fastest.
+    self.__title_widget = self.__screen.add_scroller_widget("title",1,1,12,1,"h",scroll_speed,"")
     self.__code_widget = self.__screen.add_string_widget("code","",y=2)
     self.__distance_to_cache_widget = self.__screen.add_string_widget("dist","",y=2, x=9)
     self.__bearing_to_cache_widget = self.__screen.add_string_widget("btc","",y=2, x=14)
