@@ -43,7 +43,7 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
     finder.update_bearing(gps_state['b'])
 
     if MEASUREMENT_STANDARD == 'US':
-        speed = gps_state['s']
+        speed = (gps_state['s'] * 2.23694)
         units = 'mph'
     elif units == 'METRIC':
         speed = (gps_state['s'] * 3.6)
