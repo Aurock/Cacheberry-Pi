@@ -24,24 +24,24 @@ class GeocacheDisplay:
   def update(self, cache_name, code, bearing, bearing_to_cache, distance_to_cache, MEASUREMENT_STANDARD):
     self.__title_widget.set_text(cache_name.encode('ascii'))
     self.__code_widget.set_text(code.encode('ascii'))
-	if MEASUREMENT_STANDARD == 'US':
-	  display_distance = (distance_to_cache / 1609.34)
-	  small_display_distance = (display_distance * 5280)
-	  units = 'mi'
-	  small_units = 'ft' 
-	  threshold = 321.868
-    elif MEASUREMENT_STANDARD == 'METRIC'
-	  display_distance = (distance_to_cache / 1000)
-	  small_display_distance = (distance_to_cache)
-	  units = 'km'
-	  small_units = 'm'
-	  threshold = 1000
-    else
-	  raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
-    if (distance_to_cache > threshold):
-	  self.__distance_to_cache_widget.set_text('%0.0f' % display_distance + units)
+    if MEASUREMENT_STANDARD == 'US':
+      display_distance = (distance_to_cache / 1609.34)
+      small_display_distance = (display_distance * 5280)
+      units = 'mi'
+      small_units = 'ft' 
+      threshold = 1609.34
+    elif MEASUREMENT_STANDARD == 'METRIC':
+      display_distance = (distance_to_cache / 1000)
+      small_display_distance = (distance_to_cache)
+      units = 'km'
+      small_units = 'm'
+      threshold = 1000
     else:
-      self.__distance_to_cache_widget.set_text('%0.0f' % small_display_distance + small_units)
+      raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
+    if (distance_to_cache > threshold):
+      self.__distance_to_cache_widget.set_text(('%0.0f' % display_distance) + units)
+    else:
+      self.__distance_to_cache_widget.set_text(('%0.0f' % small_display_distance) + small_units)
     self.__bearing_widget.set_text(bearing)
     self.__bearing_to_cache_widget.set_text(bearing_to_cache)
 

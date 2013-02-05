@@ -73,7 +73,7 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
           gislib.humanizeBearing(gps_state['b']) if gps_state['s'] > 2 else '',
           gislib.humanizeBearing(gislib.calculateBearing(gps_state['p'], closest['position'])),
           distance,
-		  MEASUREMENT_STANDARD
+          MEASUREMENT_STANDARD
           )
 
       geocache_display.show(distance < 1000)  #if within 1km show in foreground (on top)
