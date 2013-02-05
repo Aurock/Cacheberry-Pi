@@ -20,7 +20,7 @@ config = ConfigParser.RawConfigParser({'MEASUREMENT_STANDARD': 'US', 'TIME_ZONE'
 config.read('cacheberrypi.cfg')
 
 MEASUREMENT_STANDARD = config.get('Settings', 'MEASUREMENT_STANDARD')
-timezone = config.get('Settings', 'TIME_ZONE')
+timezone = config.get('Settings', 'TIME_ZONE') # unnecessary?
 SCROLL_SPEED = config.get('Settings', 'DISPLAY_SCROLL_SPEED')
 GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
 TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
@@ -29,10 +29,8 @@ DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
 LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 LED_SEARCH_STATUS = 2
 LED_CLOSE = 1
-
-
-os.environ['TZ'] = timezone
-time.tzset()
+os.environ['TZ'] = timezone # get time zone setting from os
+time.tzset() # set timezone in python to match the os timezone setting
 
 def mainloop(led, gps, finder, geocache_display, dashboard):
   while 1:
@@ -42,7 +40,7 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
     finder.update_speed(gps_state['s'])
     finder.update_bearing(gps_state['b'])
 
-    if MEASUREMENT_STANDARD == 'US':
+    if MEASUREMENT_STANDARD == 'US':  # convert speed from meters/sec to MPH or KPH
         speed = (gps_state['s'] * 2.23694)
         units = 'mph'
     elif units == 'METRIC':
@@ -52,7 +50,7 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
         raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
 
     try:
-      clock = localtime(time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z'))
+      clock = localize_time(time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z'))
     except:
       clock = None
 
@@ -91,7 +89,7 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
 
     time.sleep(.5)
 
-def localtime(gmttime):
+def localize_time(gmttime):    # Converts a struct_time tuple from UTC to Local Time
     unixtime = timegm(gmttime)
     clock = time.localtime(unixtime)
   

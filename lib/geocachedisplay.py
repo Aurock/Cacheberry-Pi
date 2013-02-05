@@ -6,7 +6,7 @@ from lcdproc.server import Server
 
 
 class GeocacheDisplay:
-  def __init__(self, scroll_speed=3):
+  def __init__(self, scroll_speed=3): # Scroll Speed can be customized in cacheberrypi.cfg
     self.__lcd = Server()
     self.__lcd.start_session()
     self.__screen = self.__lcd.add_screen("cache")
@@ -25,8 +25,8 @@ class GeocacheDisplay:
     self.__title_widget.set_text(cache_name.encode('ascii'))
     self.__code_widget.set_text(code.encode('ascii'))
     if MEASUREMENT_STANDARD == 'US':
-      display_distance = (distance_to_cache / 1609.34)
-      small_display_distance = (display_distance * 5280)
+      display_distance = (distance_to_cache / 1609.34) # convert distance_to_cache from meters to miles
+      small_display_distance = (display_distance * 5280) # convert display_distance from miles to feet
       units = 'mi'
       small_units = 'ft' 
       threshold = 1609.34
@@ -38,7 +38,7 @@ class GeocacheDisplay:
       threshold = 1000
     else:
       raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
-    if (distance_to_cache > threshold):
+    if (distance_to_cache > threshold): # If distance to cache is less than 1 'units', display small_units
       self.__distance_to_cache_widget.set_text(('%0.0f' % display_distance) + units)
     else:
       self.__distance_to_cache_widget.set_text(('%0.0f' % small_display_distance) + small_units)
