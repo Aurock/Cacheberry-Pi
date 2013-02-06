@@ -20,7 +20,7 @@ config = ConfigParser.RawConfigParser({'MEASUREMENT_STANDARD': 'US', 'TIME_ZONE'
 config.read('cacheberrypi.cfg')
 
 MEASUREMENT_STANDARD = config.get('Settings', 'MEASUREMENT_STANDARD')
-timezone = config.get('Settings', 'TIME_ZONE') # unnecessary?
+timezone = config.get('Settings', 'TIME_ZONE')
 SCROLL_SPEED = config.get('Settings', 'DISPLAY_SCROLL_SPEED')
 GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
 TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
@@ -29,7 +29,7 @@ DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
 LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 LED_SEARCH_STATUS = 2
 LED_CLOSE = 1
-os.environ['TZ'] = timezone # get time zone setting from os
+os.environ['TZ'] = timezone # set environment variable TZ from 'timezone'
 time.tzset() # set timezone in python to match the os timezone setting
 
 def mainloop(led, gps, finder, geocache_display, dashboard):
@@ -89,9 +89,10 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
 
     time.sleep(.5)
 
-def localize_time(gmttime):    # Converts a struct_time tuple from UTC to Local Time
-    unixtime = timegm(gmttime)
-    clock = time.localtime(unixtime)
+def localize_time(utctime):    # Converts a struct_time tuple from UTC to Local Time
+    unixtime = timegm(utctime) # Convert utctime to seconds since the epoch
+    localized_time = time.localtime(unixtime) # convert unixtime to a localized struct_time 
+    return localized_time
   
 if __name__=='__main__':
 
