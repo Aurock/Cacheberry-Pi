@@ -27,8 +27,8 @@ class GeocacheDisplay:
     if MEASUREMENT_STANDARD == 'US':
       display_distance = (distance_to_cache / 1609.34) # convert distance_to_cache from meters to miles
       small_display_distance = (display_distance * 5280) # convert display_distance from miles to feet
-      units = 'mi'
-      small_units = 'ft' 
+      units = "Mi"
+      small_units = "'" 
       threshold = 1609.34
     elif MEASUREMENT_STANDARD == 'METRIC':
       display_distance = (distance_to_cache / 1000)
@@ -39,11 +39,11 @@ class GeocacheDisplay:
     else:
       raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
     if (distance_to_cache > threshold): # If distance to cache is less than 1 'units', display small_units
-      self.__distance_to_cache_widget.set_text(('%0.0f' % display_distance) + units)
+      self.__distance_to_cache_widget.set_text((('%0.0f' % display_distance) + units).rjust(4))
     else:
-      self.__distance_to_cache_widget.set_text(('%0.0f' % small_display_distance) + small_units)
-    self.__bearing_widget.set_text(bearing)
-    self.__bearing_to_cache_widget.set_text(bearing_to_cache)
+      self.__distance_to_cache_widget.set_text((('%0.0f' % small_display_distance) + small_units).rjust(5))
+    self.__bearing_widget.set_text((bearing).rjust(3))
+    self.__bearing_to_cache_widget.set_text((bearing_to_cache).rjust(3))
 
   def hide(self):
     self.__screen.set_priority("hidden")
