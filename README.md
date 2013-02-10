@@ -26,10 +26,11 @@ See an overview [Video on YouTube](http://youtu.be/bwD6K2EeeV8) or view the [pro
 * [LCDProc] (http://www.lcdproc.org/) - Available through APT (required custom display driver)                                                      
 * [RPi.GPIO] (http://pypi.python.org/pypi/RPi.GPIO) 
 * [AutoFS] (http://www.autofs.org/) - Available through APT
-                                     
+
+
+***                                     
 # Setup Instructions #
 
-These are, obviously, a work in progress :)
 
 ## Package Installation ##
 
@@ -121,3 +122,10 @@ $ cp auto.master /etc
 Edit /etc/hosts and /etc/hostname and replace "raspberrypi" with "cacheberrypi".
 
 
+## GSAK Export Settings ##
+When displaying a cache, the top line of the display will show the cache description, and the bottom line will show the Waypoint Name.  These can be configured when exporting the cache data from GSAK.  Customize the data exported using [GSAK's "Special Tags"](http://gsak.net/help/hs10300.html#scustom). 
+
+For example, the waypoint name and cache description could be set as follows: 
+
+* Waypoint Name = "%Caches_FavPoints (%Dif/%Ter)"
+* Cache Description Format = "%Name by %By"

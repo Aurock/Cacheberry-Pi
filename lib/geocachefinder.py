@@ -9,12 +9,12 @@ import math
 import geom
 import ConfigParser
 
-config = ConfigParser.RawConfigParser({'STARTING_SEARCH_RADIUS:1000,CLOSE_RADIUS:100,\
-                                       MAXIMUM_RADIUS:40000,MAXIMUM_DISTANCE_FROM_PATH:200,\
-                                       SPEED_THRESHOLD:60})
+config = ConfigParser.RawConfigParser({'STARTING_SEARCH_RADIUS':1000,'CLOSE_RADIUS':100,\
+                                       'MAXIMUM_RADIUS':40000,'MAXIMUM_DISTANCE_FROM_PATH':200,\
+                                       'SPEED_THRESHOLD':60})
 config.read('cacheberrypi.cfg')
 
-STARTING_SEARCH_PATTERN = config.get('SearchPattern', 'STARTING_SEARCH_PATTERN')
+STARTING_SEARCH_RADIUS = config.get('SearchPattern', 'STARTING_SEARCH_PATTERN')
 CLOSE_RADIUS = config.get('SearchPattern', 'CLOSE_RADIUS')
 MAXIMUM_RADIUS = config.get('SearchPattern', 'MAXIMUM_RADIUS')
 MAXIMUM_DISTANCE_FROM_PATH = config.get('SearchPattern', 'MAXIMUM_DISTANCE_FROM_PATH')
