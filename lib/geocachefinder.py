@@ -7,31 +7,18 @@ import time
 import copy
 import math
 import geom
+import ConfigParser
 
-# ===============================================================================
+config = ConfigParser.RawConfigParser({'STARTING_SEARCH_RADIUS:1000,CLOSE_RADIUS:100,\
+                                       MAXIMUM_RADIUS:40000,MAXIMUM_DISTANCE_FROM_PATH:200,\
+                                       SPEED_THRESHOLD:60})
+config.read('cacheberrypi.cfg')
 
-# Starting search radius.  The actual radius is adjusted as we find / don't find
-# caches.
-STARTING_SEARCH_RADIUS = 1000 #m
-
-# Automatically show cache within this distance regardless of the direction to 
-# the cache.
-CLOSE_RADIUS = 100 #m
-
-# Maximum search radius.  Prevents search radius from growing indefinately.
-MAXIMUM_RADIUS = 40000 #m
-
-# When traveling above SPEED_THRESHOLD, return closest cache that is no more
-# that this distance from the estimate path of travel.  This will approximately 
-# return caches on your route when traveling along highways.
-MAXIMUM_DISTANCE_FROM_PATH = 200 #m
-
-# This speed threshold is used to switch between the slow speed searching 
-# behaviour (look for closest cache in any direction) and the high speed
-# behaviour (look for closest cache along path of travel).
-SPEED_THRESHOLD = 60 #km/h
-
-# ===============================================================================
+STARTING_SEARCH_PATTERN = config.get('SearchPattern', 'STARTING_SEARCH_PATTERN')
+CLOSE_RADIUS = config.get('SearchPattern', 'CLOSE_RADIUS')
+MAXIMUM_RADIUS = config.get('SearchPattern', 'MAXIMUM_RADIUS')
+MAXIMUM_DISTANCE_FROM_PATH = config.get('SearchPattern', 'MAXIMUM_DISTANCE_FROM_PATH')
+SPEED_THRESHOLD = config.get('SearchPattern', 'SPEED_THRESHOLD')
 
 class GeocacheFinder(Thread):
   def __init__(self, database_file, ping_func):
