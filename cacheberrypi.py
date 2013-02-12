@@ -13,16 +13,24 @@ from lib.tracklogexporter import TracklogExporter
 from lib.dashboard import Dashboard
 import lib.databaseinit
 from pyspatialite import dbapi2 as spatialite
+from calendar import timegm
+import ConfigParser
 
-## CONFIGURATION ##########################################################
-GEOCACHE_SOURCE = '/var/autofs/removable/sda1/cacheberrypi/nav.csv'
-TRACKLOG_TARGET = 'tracks'
-TRACKLOG_EXPORT_TARGET = '/var/autofs/removable/sda1/cacheberrypi/tracks/'
-DATABASE_FILENAME = 'geocaches.sqlite'
-LED_PINS = [16,18,22] #GPIO23,24,25
+config = ConfigParser.RawConfigParser({'MEASUREMENT_STANDARD': 'US', 'TIME_ZONE': 'US/Central'})
+config.read('cacheberrypi.cfg')
+
+MEASUREMENT_STANDARD = config.get('Settings', 'MEASUREMENT_STANDARD')
+timezone = config.get('Settings', 'TIME_ZONE')
+SCROLL_SPEED = config.get('Settings', 'DISPLAY_SCROLL_SPEED')
+GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
+TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
+TRACKLOG_EXPORT_TARGET = config.get('Advanced', 'TRACKLOG_EXPORT_TARGET')
+DATABASE_FILENAME = config.get('Advanced', 'DATABASE_FILENAME')
+LED_PINS = map(int,(config.get('Advanced', 'LED_PINS')).split(','))
 LED_SEARCH_STATUS = 2
 LED_CLOSE = 1
-###########################################################################
+os.environ['TZ'] = timezone # set environment variable TZ from 'timezone'
+time.tzset() # set timezone in python to match the os timezone setting
 
 def mainloop(led, gps, finder, geocache_display, dashboard):
   while 1:
@@ -32,15 +40,25 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
     finder.update_speed(gps_state['s'])
     finder.update_bearing(gps_state['b'])
 
+    if MEASUREMENT_STANDARD == 'US':  # convert speed from meters/sec to MPH or KPH
+        speed = (gps_state['s'] * 2.23694)
+        units = 'mph'
+    elif units == 'METRIC':
+        speed = (gps_state['s'] * 3.6)
+        units = 'kph'
+    else:
+        raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
+
     try:
-      clock = time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z')
+      clock = localize_time(time.strptime(gps_state['t'], '%Y-%m-%dT%H:%M:%S.000Z'))
     except:
       clock = None
 
     dashboard.update(
         clock,
-        gps_state['s'], 
-        gislib.humanizeBearing(gps_state['b']))
+        speed, 
+        gislib.humanizeBearing(gps_state['b']),
+        units)
 
     # grab current closest cache 
     closest = finder.closest()
@@ -52,7 +70,8 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
           closest["code"],
           gislib.humanizeBearing(gps_state['b']) if gps_state['s'] > 2 else '',
           gislib.humanizeBearing(gislib.calculateBearing(gps_state['p'], closest['position'])),
-          distance
+          distance,
+          MEASUREMENT_STANDARD
           )
 
       geocache_display.show(distance < 1000)  #if within 1km show in foreground (on top)
@@ -69,6 +88,11 @@ def mainloop(led, gps, finder, geocache_display, dashboard):
       geocache_display.hide()
 
     time.sleep(.5)
+
+def localize_time(utctime):    # Converts a struct_time tuple from UTC to Local Time
+    unixtime = timegm(utctime) # Convert utctime to seconds since the epoch
+    localized_time = time.localtime(unixtime) # convert unixtime to a localized struct_time 
+    return localized_time
   
 if __name__=='__main__':
 
@@ -86,7 +110,7 @@ if __name__=='__main__':
   finder = GeocacheFinder(DATABASE_FILENAME, lambda: led.toggle(LED_SEARCH_STATUS))
   finder.start()
 
-  geocache_display = GeocacheDisplay()
+  geocache_display = GeocacheDisplay(SCROLL_SPEED)
 
   loader = GeocacheLoader(DATABASE_FILENAME, GEOCACHE_SOURCE, 
       lambda: finder.pause(),

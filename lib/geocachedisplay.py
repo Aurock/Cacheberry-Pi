@@ -4,30 +4,46 @@ import os
 import unicodedata
 from lcdproc.server import Server
 
+
 class GeocacheDisplay:
-  def __init__(self):
+  def __init__(self, scroll_speed=3): # Scroll Speed can be customized in cacheberrypi.cfg
     self.__lcd = Server()
     self.__lcd.start_session()
     self.__screen = self.__lcd.add_screen("cache")
     self.__screen.set_heartbeat("off")
     self.__screen.set_duration(10)
     self.__screen.set_priority("hidden")
-
-    self.__title_widget = self.__screen.add_scroller_widget("title",1,1,12,1,"h",1,"")
+# Scroller Widget parameters - SCREEN, REF, LEFT, TOP, RIGHT, BOTTOM, DIRECTION, SPEED, TEXT
+# Scroll speed increases as the speed setting decreases.  1 is the fastest.
+    self.__title_widget = self.__screen.add_scroller_widget("title",1,1,12,1,"h",scroll_speed,"")
     self.__code_widget = self.__screen.add_string_widget("code","",y=2)
     self.__distance_to_cache_widget = self.__screen.add_string_widget("dist","",y=2, x=9)
     self.__bearing_to_cache_widget = self.__screen.add_string_widget("btc","",y=2, x=14)
     self.__bearing_widget = self.__screen.add_string_widget("bearing","",y=1, x=14)
 
-  def update(self, cache_name, code, bearing, bearing_to_cache, distance_to_cache):
+  def update(self, cache_name, code, bearing, bearing_to_cache, distance_to_cache, MEASUREMENT_STANDARD):
     self.__title_widget.set_text(cache_name.encode('ascii'))
     self.__code_widget.set_text(code.encode('ascii'))
-    if (distance_to_cache > 1000):
-      self.__distance_to_cache_widget.set_text('%0.0fkm' % (distance_to_cache / 1000.0))
+    if MEASUREMENT_STANDARD == 'US':
+      display_distance = (distance_to_cache / 1609.34) # convert distance_to_cache from meters to miles
+      small_display_distance = (display_distance * 5280) # convert display_distance from miles to feet
+      units = "Mi"
+      small_units = "'" 
+      threshold = 1609.34
+    elif MEASUREMENT_STANDARD == 'METRIC':
+      display_distance = (distance_to_cache / 1000)
+      small_display_distance = (distance_to_cache)
+      units = 'km'
+      small_units = 'm'
+      threshold = 1000
     else:
-      self.__distance_to_cache_widget.set_text('%0.0fm' % distance_to_cache)
-    self.__bearing_widget.set_text(bearing)
-    self.__bearing_to_cache_widget.set_text(bearing_to_cache)
+      raise ValueError('MEASUREMENT_STANDARD must be "US" or "METRIC"')
+    if (distance_to_cache > threshold): # If distance to cache is less than 1 'units', display small_units
+      self.__distance_to_cache_widget.set_text((('%0.0f' % display_distance) + units).rjust(4))
+    else:
+      self.__distance_to_cache_widget.set_text((('%0.0f' % small_display_distance) + small_units).rjust(5))
+    self.__bearing_widget.set_text((bearing).rjust(3))
+    self.__bearing_to_cache_widget.set_text((bearing_to_cache).rjust(3))
 
   def hide(self):
     self.__screen.set_priority("hidden")
