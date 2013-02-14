@@ -130,3 +130,12 @@ $ cp auto.master /etc
 
 ###Change host name###
 Edit /etc/hosts and /etc/hostname, replacing "raspberrypi" with "cacheberrypi".
+
+## GSAK Export Settings ##
+When displaying a cache, the top line of the display will show the cache description, and the bottom line will show the Waypoint Name.  These can be configured when exporting the cache data from GSAK.  Customize the data exported using [GSAK's "Special Tags"](http://gsak.net/help/hs10300.html#scustom). 
+
+For example, the waypoint name and cache description could be set as follows: 
+
+* Waypoint Name = "%Caches_FavPoints (%Dif/%Ter)"
+* Cache Description Format = "%Name by %By"
+
