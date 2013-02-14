@@ -21,7 +21,7 @@ config.read('cacheberrypi.cfg')
 
 MEASUREMENT_STANDARD = config.get('Settings', 'MEASUREMENT_STANDARD')
 timezone = config.get('Settings', 'TIME_ZONE')
-SCROLL_SPEED = config.get('Settings', 'DISPLAY_SCROLL_SPEED')
+SCROLL_SPEED = config.getint('Settings', 'DISPLAY_SCROLL_SPEED')
 GEOCACHE_SOURCE = config.get('Advanced', 'GEOCACHE_SOURCE')
 TRACKLOG_TARGET = config.get('Advanced', 'TRACKLOG_TARGET')
 TRACKLOG_EXPORT_TARGET = config.get('Advanced', 'TRACKLOG_EXPORT_TARGET')
