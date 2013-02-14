@@ -14,7 +14,7 @@ config = ConfigParser.RawConfigParser({'STARTING_SEARCH_RADIUS':1000,'CLOSE_RADI
                                        'SPEED_THRESHOLD':60})
 config.read('cacheberrypi.cfg')
 
-STARTING_SEARCH_RADIUS = config.get('SearchPattern', 'STARTING_SEARCH_PATTERN')
+STARTING_SEARCH_RADIUS = config.get('SearchPattern', 'STARTING_SEARCH_RADIUS')
 CLOSE_RADIUS = config.get('SearchPattern', 'CLOSE_RADIUS')
 MAXIMUM_RADIUS = config.get('SearchPattern', 'MAXIMUM_RADIUS')
 MAXIMUM_DISTANCE_FROM_PATH = config.get('SearchPattern', 'MAXIMUM_DISTANCE_FROM_PATH')
@@ -82,7 +82,7 @@ class GeocacheFinder(Thread):
     dist = 'greatcirclelength(geomfromtext("linestring(" || x(location) || " " || y(location) || ", %f %f)", 4326))' % (lat, lon)
 
     # Query for caches within circle and order by distance
-    rs = cur.execute('select code, description, x(location), y(location) from gc where MbrWithin(location, %(searchCircle)s)' % {'dist':dist, 'searchCircle':circle})
+    rs = cur.execute('select code, description, x(location), y(location, URL) from gc where MbrWithin(location, %(searchCircle)s)' % {'dist':dist, 'searchCircle':circle})
 
     data = []
     for row in rs:
@@ -90,6 +90,7 @@ class GeocacheFinder(Thread):
       data.append({
         'code': row[0],
         'description': row[1],
+        'URL': row[4],
         'distance': int(1000.0 * gislib.getDistance(coord, (lat, lon))),
         'bearing': gislib.calculateBearing((lat, lon), coord),
         'position': coord
