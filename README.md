@@ -131,11 +131,18 @@ $ cp auto.master /etc
 ###Change host name###
 Edit /etc/hosts and /etc/hostname, replacing "raspberrypi" with "cacheberrypi".
 
-## GSAK Export Settings ##
-When displaying a cache, the top line of the display will show the cache description, and the bottom line will show the Waypoint Name.  These can be configured when exporting the cache data from GSAK.  Customize the data exported using [GSAK's "Special Tags"](http://gsak.net/help/hs10300.html#scustom). 
+## Loading Geocaches ##
+Using the program "Geocaching Swiss Army Knife" (GSAK for short), export the geocache data to a file in Microsoft Streets & Trips format.  Save the file on a usb drive, as "\cacheberrypi\nav.csv".  Insert the flash drive into the usb port on the Cacheberry Pi, and watch the LCD as the cache data is transferred from the USB drive. 
 
-For example, the waypoint name and cache description could be set as follows: 
+### Export options & Geocache Display ###
+When exporting the data from GSAK, the cache description, waypoint name, and URL link format can be modified.  Customize the data exported in these fields using [GSAK's "Special Tags"](http://gsak.net/help/hs10300.html#scustom).  
 
-* Waypoint Name = "%Caches_FavPoints (%Dif/%Ter)"
+When the Cacheberry Pi has found a nearby cache, the left side of the LCD will show the "cache description" on the top line, and the "URL Link" on the bottom.  I recommend setting the fields as follows when exporting from GSAK:
+
+~~~
+* Waypoint Name = "%code"
+* URL Link = "%Caches_FavPoints (%Dif/%Ter)"
 * Cache Description Format = "%Name by %By"
+~~~
+Note: While the Cache description and URL Link can be set he Waypoint Name field MUST be %code.  
 
