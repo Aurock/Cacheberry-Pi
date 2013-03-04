@@ -11,6 +11,7 @@ def create(dbfile):
     sql = 'CREATE TABLE gc ('
     sql += 'code TEXT NOT NULL PRIMARY KEY'
     sql += ', description TEXT NOT NULL'
+    sql += ', URL TEXT NOT NULL'
     sql += ', type TEXT NOT NULL'
     sql += ', container TEXT NOT NULL'
     sql += ', diff FLOAT NOT NULL'

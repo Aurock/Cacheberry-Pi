@@ -51,8 +51,8 @@ class GeocacheLoader(Thread):
         if position % 20 == 0:
           self.__progress_widget.set_length((float(position)/len(lines)) * (5*16))
         Name,Latitude,Longitude,Description,URL,Type,Container,Diff,Terr = line.split('\t')
-        cur.execute("insert into gc (code, description, type, container, diff, terr, location) values (?,?,?,?,?,?,MakePoint(?, ?, 4326))", 
-            (Name, Description.replace("'", ""), Type, Container, float(Diff), float(Terr), float(Latitude), float(Longitude)));
+        cur.execute("insert into gc (code, description, URL, type, container, diff, terr, location) values (?,?,?,?,?,?,?,MakePoint(?, ?, 4326))", 
+            (Name, Description.replace("'", ""), URL, Type, Container, float(Diff), float(Terr), float(Latitude), float(Longitude)));
 
       db.commit()
       cur.close()

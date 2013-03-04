@@ -8,4 +8,4 @@ make server
 cp server/drivers/hd44780.so /usr/lib/lcdproc
 ~~~
 
-The driver was patched by Chris Rowat to work with the ElecFreaks backpack.
+The driver was patched by Steve Whitcher <steve@whitcher.org> for use with the Sainsmart i2c Backpack.
