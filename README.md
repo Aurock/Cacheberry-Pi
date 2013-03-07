@@ -110,10 +110,13 @@ i2c-bcm2708
 ###Disable serial console###
 The Adafruit GPS unit connects to the serial port of the pi.  By default, the pi is configured to use this port as a serial console, which must be disabled before the port can be used by the GPS.
 * Comment out the following line in /etc/inittab by adding a \\# at the beginning of line:
+
 ~~~
 T0:23:respawn:/sbin/getty -L ttyAMA0 115200 vt100
 ~~~
+
 * The file /boot/cmdline.txt contains one long line of text.  Locate the following text and delete it.  Be careful not to change anything else in this file
+
 ~~~
 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200
 ~~~
