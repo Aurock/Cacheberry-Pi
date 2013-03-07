@@ -11,23 +11,26 @@
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
  *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
+ * 
+ * This is a custom version of the driver, for i2c backpacks sold by DFRobot and Sainsmart.  
+ * The connections between the LCD and PFC8574 chips on these boards are different from the standard. 
  *
  * The connections are:
  * PCF8574AP	  LCD
- * P0 (4)	  D4 (11)
- * P1 (5)	  D5 (12)
- * P2 (6)	  D6 (13)
- * P3 (7)	  D7 (14)
- * P4 (9)	  RS (4)
- * P5 (10)	  RW (5)
- * P6 (11)	  EN (6)
+ * P0 (4)	  RS (4)
+ * P1 (5)	  RW (5)
+ * P2 (6)	  EN (6)
+ * P4 (9)	  D4 (11)
+ * P5 (10)	  D5 (12)
+ * P6 (11)	  D6 (13)
+ * P7 (12)    D7 (14)
  *
  * Backlight
- * P7 (12)	  /backlight (optional, active-low)
+ * P3 (7)	  /backlight (optional, active-low)
  *
  * Configuration:
- * device=/dev/i2c-0   # the device file of the i2c bus
- * port=0x20   # the i2c address of the i2c port expander
+ * device=/dev/i2c-1   # the device file of the i2c bus
+ * port=0x27   # the i2c address of the i2c port expander
  *
  *  Attention: Bit 8 of the address given in port is special:
  *  It tells the driver to treat the device as PCA9554 or similar,
@@ -76,10 +79,10 @@ void i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state);
 void i2c_HD44780_close(PrivateData *p);
 
-#define RS	0x10
-#define RW	0x20
-#define EN	0x40
-#define BL	0x80
+#define RS	0x01
+#define RW	0x02
+#define EN	0x04
+#define BL	0x08
 // note that the above bits are all meant for the data port of PCF8574
 
 #define I2C_ADDR_MASK 0x7f
@@ -90,21 +93,15 @@ i2c_out(PrivateData *p, unsigned char val)
 {
 	__u8 data[2];
 	int datalen;
-	unsigned char newval;
-	newval =  (val >> 5) & 0x01;
-	newval |= (val >> 6) ^ 0x02;	
-	newval |= (val >> 1) & 0x04;
-	newval |= (val << 1) & 0x08;
-	newval |= (val << 3) & 0x10;
-	newval |= (val << 5) & 0x20;
-	newval |= val & 0x40;
-	newval |= (val << 3) & 0x80; 
-
-
 	static int no_more_errormsgs=0;
-		data[0]=0x09; // command: read/write output port register
-		data[1]=newval;
+	if (p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs a 2-byte command
+		data[0]=1; // command: read/write output port register
+		data[1]=val;
 		datalen=2;
+	} else { // we have a PCF8574 or similar, that needs a 1-byte command
+		data[0]=val;
+		datalen=1;
+	}
 	if (write(p->fd,data,datalen) != datalen) {
 		p->hd44780_functions->drv_report(no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s",
 			val, p->port & I2C_ADDR_MASK, strerror(errno));
@@ -112,7 +109,7 @@ i2c_out(PrivateData *p, unsigned char val)
 	}
 }
 
-#define DEFAULT_DEVICE		"/dev/i2c-0"
+#define DEFAULT_DEVICE		"/dev/i2c-1"
 
 
 /**
@@ -153,12 +150,19 @@ hd_init_i2c(Driver *drvthis)
 	}
 
 
+	if (p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs special config
 		__u8 data[2];
-		data[0] = 0; // command: set output direction
+		data[0] = 2; // command: set polarity inversion
+		data[1] = 0; // -> no polarity inversion
+		if (write(p->fd,data,2) != 2) {
+			report(RPT_ERR, "HD44780: I2C: i2c set polarity inversion failed: %s", strerror(errno));
+		}
+		data[0] = 3; // command: set output direction
 		data[1] = 0; // -> all pins are outputs
 		if (write(p->fd,data,2) != 2) {
 			report(RPT_ERR, "HD44780: I2C: i2c set output direction failed: %s", strerror(errno));
 		}
+	}
 
 	hd44780_functions->senddata = i2c_HD44780_senddata;
 	hd44780_functions->backlight = i2c_HD44780_backlight;
@@ -167,43 +171,43 @@ hd_init_i2c(Driver *drvthis)
 	// powerup the lcd now
 	/* We'll now send 0x03 a couple of times,
 	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
-	i2c_out(p, 0x03);
+	i2c_out(p, 0x30);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
 
-	i2c_out(p, enableLines | 0x03);
+	i2c_out(p, enableLines | 0x30);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
-	i2c_out(p, 0x03);
+	i2c_out(p, 0x30);
 	hd44780_functions->uPause(p, 15000);
 
-	i2c_out(p, enableLines | 0x03);
+	i2c_out(p, enableLines | 0x30);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
-	i2c_out(p, 0x03);
+	i2c_out(p, 0x30);
 	hd44780_functions->uPause(p, 5000);
 
-	i2c_out(p, enableLines | 0x03);
+	i2c_out(p, enableLines | 0x30);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
-	i2c_out(p, 0x03);
+	i2c_out(p, 0x30);
 	hd44780_functions->uPause(p, 100);
 
-	i2c_out(p, enableLines | 0x03);
+	i2c_out(p, enableLines | 0x30);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
-	i2c_out(p, 0x03);
+	i2c_out(p, 0x30);
 	hd44780_functions->uPause(p, 100);
 
 	// now in 8-bit mode...  set 4-bit mode
-	i2c_out(p, 0x02);
+	i2c_out(p, 0x20);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
 
-	i2c_out(p, enableLines | 0x02);
+	i2c_out(p, enableLines | 0x20);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
-	i2c_out(p, 0x02);
+	i2c_out(p, 0x20);
 	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
@@ -239,8 +243,8 @@ void
 i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	unsigned char enableLines = 0, portControl = 0;
-	unsigned char h = (ch >> 4) & 0x0f;     // high and low nibbles
-	unsigned char l = ch & 0x0f;
+	unsigned char h = ch & 0xf0; // high and low nibbles
+	unsigned char l = (ch << 4) & 0xf0;
 
 	if (flags == RS_INSTR)
 		portControl = 0;
@@ -276,7 +280,7 @@ i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flag
  */
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state)
 {
-	p->backlight_bit = ((!p->have_backlight||state) ? 0 : BL);
+	p->backlight_bit = ((p->have_backlight && state) ? BL : 0);
 
 	i2c_out(p, p->backlight_bit);
 }
